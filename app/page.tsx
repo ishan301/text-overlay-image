@@ -1,95 +1,91 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+import styles from "./page.module.css";
+import Draggable from "react-draggable";
+import { RefObject, useRef, useState } from "react";
+
 
 export default function Home() {
+  const containerRef: RefObject<HTMLDivElement> = useRef(null);
+  const [childElements, setChildElements] = useState<JSX.Element[]>([]);
+  const currentText = useRef<any | null>(null);
+  const [textclicked, setTextClicked] = useState(false);
+  const [id, setId] = useState(0);
+
+  function getID():number {
+    setId(id+1);
+    return id;
+  }
+
+  function addText() {
+    const container = containerRef.current;
+    const newElement = (
+      <Draggable
+        defaultClassName={styles.child}
+        bounds={{ left: 0, right: 1000, top: 0, bottom: 709 }}
+        key={getID()}
+      >
+        <input
+        id={`${id}`}
+          type="text"
+          placeholder="Enter your text"
+          onClick={(event) => {            
+            currentText.current = event.target;
+            setTextClicked(true);             
+          }}
+          onChange={(event) => {
+            currentText.current.style.width = `${Math.max(
+              400,
+              currentText.current.value.length * 40
+            )}px`;
+          }}
+          style={{
+            background: "transparent",
+            padding: "1rem",
+            fontSize: "3rem",
+            fontWeight: "900",
+            border: "none",
+          }}
+        />
+      </Draggable>
+    );
+    
+    setChildElements([...childElements, newElement]);    
+  }
+
+  function deleteText() {
+    setChildElements(childElements.filter(child => child.key != currentText.current.id));
+    setTextClicked(false);
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <div className={styles.main}>
+        <h1 className={styles.desciption}>Text Overlay on Image</h1>
+        <div className={styles.image} ref={containerRef} style={{position:'relative'}}>
+          {childElements}
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            style={{ padding: "1rem", fontSize: "large", fontWeight: "bold" }}
+            onClick={() => addText()}
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            Add Text
+          </button>
+          {textclicked && (
+            <button
+              style={{
+                padding: "1rem",
+                fontSize: "large",
+                fontWeight: "bold",
+                background: "red",
+              }}
+              onClick={() => deleteText()}
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    </>
+  );
 }
